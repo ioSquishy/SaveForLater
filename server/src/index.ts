@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 const app = express();
-require("dotenv").config(); // required to read from .env file
+dotenv.config(); // required to read from .env file
 const port = 3030;
 
 // automatically convert requests to json
@@ -13,9 +14,7 @@ app.get("/", (req, res) => {
   res.send("hi");
 });
 
-
 // port to listen on
-// second argument is optional but just a nice confirmation
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
   console.log(`http://localhost:${port}/`);
