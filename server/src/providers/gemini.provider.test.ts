@@ -1,52 +1,71 @@
-import * as fs from "node:fs";
-import { expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { getTrackFromBase64 } from "./gemini.provider";
 import Mime from "../types/mime";
+import { ai } from "../config/gemini.config";
+import Track from '../types/track';
 
-async function testLocalImage(pathToImg: string, mimeType: Mime) {
-  const base64ImageFile = fs.readFileSync(pathToImg, {
-    encoding: "base64",
-  });
+// mock ai object to prevent calling actual api
+vi.mock('../config/gemini.config', async (importOriginal) => {
+  // 1. Grab everything that is ACTUALLY in the file
+  const actual = await importOriginal<typeof import('../config/gemini.config')>();
   
-  try {
-    return await getTrackFromBase64(base64ImageFile, mimeType);
-  } catch (e) {
-    throw e;
-  }
-}
-
-test('multiple artists', async () => {
-  let result = await testLocalImage("test/track_images/artists.jpg", Mime.JPEG);
-  expect(result).toMatchObject({
-    songTitle: 'More Than Ever',
-    songArtists: [ 'Andrea Chahayed', 'Jackson Rau' ]
-  });
-  expect(result?.certainty).toBeGreaterThan(0.5);
+  return {
+    ...actual, // 2. Keep the real trackExtractionContent, trackExtractionConfig, etc.
+    ai: {      // 3. Only override the 'ai' export with our mock
+      models: {
+        generateContent: vi.fn(),
+      },
+    },
+  };
 });
 
-test('full screenshot', async () => {
-  let result = await testLocalImage("test/track_images/full.PNG", Mime.PNG);
-  expect(result).toMatchObject({
-    songTitle: 'ONE LAST TIME',
-    songArtists: [ 'COOING' ]
-  });
-  expect(result?.certainty).toBeGreaterThan(0.5);
-});
+describe('getTrackFromBase64 Mock Tests', () => {
+  const mockBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+  const mockMime = Mime.JPEG;
 
-test('foreign language', async () => {
-  let result = await testLocalImage("test/track_images/lang.jpg", Mime.JPEG);
-  expect(result).toMatchObject({
-    songTitle: '東京劇場',
-    songArtists: [ 'Ettone' ]
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
-  expect(result?.certainty).toBeGreaterThan(0.5);
-});
 
-test('simple', async () => {
-  let result = await testLocalImage("test/track_images/simple.jpg", Mime.JPEG);
-  expect(result).toMatchObject({
-    songTitle: 'kiss me blue',
-    songArtists: [ 'pami' ]
+  test('valid data', async () => {
+    const mockTrack : Track = { songTitle: 'Super', songArtists: [ 'SEVENTEEN' ] };
+    
+    // Setup the mock to return a successful response
+    (ai.models.generateContent as any).mockResolvedValue({
+      text: JSON.stringify(mockTrack),
+    });
+
+    const result = await getTrackFromBase64(mockBase64, mockMime);
+
+    expect(result).toEqual(mockTrack);
+    expect(ai.models.generateContent).toHaveBeenCalledTimes(1);
   });
-  expect(result?.certainty).toBeGreaterThan(0.5);
+
+  test('empty response', async () => {
+    (ai.models.generateContent as any).mockResolvedValue({
+      text: '', // Empty string
+    });
+
+    await expect(getTrackFromBase64(mockBase64, mockMime))
+      .rejects.toThrow('Gemini returned an empty response.');
+  });
+
+  test('invalid JSON', async () => {
+    (ai.models.generateContent as any).mockResolvedValue({
+      text: 'not-json-at-all',
+    });
+
+    await expect(getTrackFromBase64(mockBase64, mockMime))
+      .rejects.toThrow('Gemini returned invalid JSON.');
+  });
+
+  test('invalid Track schema', async () => {
+    // Return JSON that is valid, but missing the correct fields
+    (ai.models.generateContent as any).mockResolvedValue({
+      text: JSON.stringify({ something: 'else' }),
+    });
+
+    await expect(getTrackFromBase64(mockBase64, mockMime))
+      .rejects.toThrow('Gemini response did not match Track format.');
+  });
 });

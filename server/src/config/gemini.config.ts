@@ -2,7 +2,7 @@ import { ENV } from "./env.config.js"
 import { GenerateContentConfig, GoogleGenAI, Type } from "@google/genai";
 export const ai = new GoogleGenAI({ apiKey: ENV.GEMINI_API_KEY });
 
-export const trackExtractionContent = "Extract the song title and artist names visible in this image. Return only JSON matching the schema. Include as many full artist names as possible, but never include partial or truncated artist names. If text is unclear, ignore it. Set certainty from 0 to 1, where 1 means very clear and fully visible text, and lower values mean blur, cutoff, glare, or ambiguity.";
+export const trackExtractionContent = "Extract the song title and artist names visible in this image. Return only JSON matching the schema. Always preserve the original language of the text found in the image. Include as many full artist names as possible, but never include partial or truncated artist names. If text is unclear, ignore it. Set certainty from 0 to 1, where 1 means very clear and fully visible text, and lower values mean blur, cutoff, glare, or ambiguity.";
 export const trackExtractionConfig: GenerateContentConfig = {
   responseMimeType: "application/json",
   responseJsonSchema: {

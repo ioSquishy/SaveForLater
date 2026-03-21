@@ -35,7 +35,7 @@ export async function getTrackFromBase64(base64ImageEncoding: string, mimeType: 
   try {
     const track = trackSchema.parse(parsed);
     return track;
-  } catch (error) {
-    throw error;
+  } catch {
+    throw new Error("Gemini response did not match Track format.");
   }
 }
