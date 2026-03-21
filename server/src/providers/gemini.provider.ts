@@ -1,4 +1,4 @@
-import { ai, trackExtractionConfig, trackExtractionContent } from "./auth/gemini-auth.js";
+import { ai, trackExtractionConfig, trackExtractionContent } from "../config/gemini.config.js";
 import * as fs from "node:fs";
 
 const base64ImageFile = fs.readFileSync("test/track_images/full.PNG", {
