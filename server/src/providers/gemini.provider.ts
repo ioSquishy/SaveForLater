@@ -1,8 +1,8 @@
 import { ai, trackExtractionConfig, trackExtractionContent } from "../config/gemini.config.js";
 import Mime from "../types/mime.js";
-import Track, { trackSchema } from "../types/track.js";
+import ScannedTrack, { scannedTrackSchema } from "../types/ScannedTrack.js";
 
-export async function getTrackFromBase64(base64ImageEncoding: string, mimeType: Mime) : Promise<Track> {
+export async function getScannedTrackFromBase64(base64ImageEncoding: string, mimeType: Mime) : Promise<ScannedTrack> {
   const contents = [
     {
       inlineData: {
@@ -33,7 +33,7 @@ export async function getTrackFromBase64(base64ImageEncoding: string, mimeType: 
   }
 
   try {
-    const track = trackSchema.parse(parsed);
+    const track = scannedTrackSchema.parse(parsed);
     return track;
   } catch {
     throw new Error("Gemini response did not match Track format.");

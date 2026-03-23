@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { getTrackFromBase64 } from "./gemini.provider";
+import { getScannedTrackFromBase64 } from "./gemini.provider";
 import Mime from "../types/mime";
 import { ai } from "../config/gemini.config";
-import Track from '../types/track';
+import Track from '../types/ScannedTrack';
 
 // mock ai object to prevent calling actual api
 vi.mock('../config/gemini.config', async (importOriginal) => {
@@ -35,7 +35,7 @@ describe('getTrackFromBase64 Mock Tests', () => {
       text: JSON.stringify(mockTrack),
     });
 
-    const result = await getTrackFromBase64(mockBase64, mockMime);
+    const result = await getScannedTrackFromBase64(mockBase64, mockMime);
 
     expect(result).toEqual(mockTrack);
     expect(ai.models.generateContent).toHaveBeenCalledTimes(1);
@@ -46,7 +46,7 @@ describe('getTrackFromBase64 Mock Tests', () => {
       text: '', // Empty string
     });
 
-    await expect(getTrackFromBase64(mockBase64, mockMime))
+    await expect(getScannedTrackFromBase64(mockBase64, mockMime))
       .rejects.toThrow('Gemini returned an empty response.');
   });
 
@@ -55,7 +55,7 @@ describe('getTrackFromBase64 Mock Tests', () => {
       text: 'not-json-at-all',
     });
 
-    await expect(getTrackFromBase64(mockBase64, mockMime))
+    await expect(getScannedTrackFromBase64(mockBase64, mockMime))
       .rejects.toThrow('Gemini returned invalid JSON.');
   });
 
@@ -65,7 +65,7 @@ describe('getTrackFromBase64 Mock Tests', () => {
       text: JSON.stringify({ something: 'else' }),
     });
 
-    await expect(getTrackFromBase64(mockBase64, mockMime))
+    await expect(getScannedTrackFromBase64(mockBase64, mockMime))
       .rejects.toThrow('Gemini response did not match Track format.');
   });
 });

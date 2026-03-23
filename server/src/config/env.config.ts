@@ -13,4 +13,6 @@ const getEnvOrThrow = (key: string): string => {
 
 export const ENV = {
   GEMINI_API_KEY: getEnvOrThrow('GEMINI_API_KEY'),
+  SPOTIFY_CLIENT_ID: getEnvOrThrow('SPOTIFY_CLIENT_ID'),
+  SPOTIFY_CLIENT_SECRET: getEnvOrThrow('SPOTIFY_CLIENT_SECRET'),
 };
