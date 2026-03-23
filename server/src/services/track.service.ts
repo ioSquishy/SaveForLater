@@ -1,6 +1,6 @@
 import { getScannedTrackFromBase64 } from "../providers/gemini.provider";
 import { getSpotifyTrack } from "../providers/spotify.provider";
-import Mime from "../types/mime";
+import Mime from "../types/Mime";
 import SpotifyTrack from "../types/SpotifyTrack";
 
 export async function getSpotifyTrackFromImage(base64ImageEncoding: string, mimeType: Mime): Promise<SpotifyTrack> {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { getScannedTrackFromBase64 } from "./gemini.provider";
-import Mime from "../types/mime";
+import Mime from "../types/Mime";
 import { ai } from "../config/gemini.config";
 import Track from '../types/ScannedTrack';
 

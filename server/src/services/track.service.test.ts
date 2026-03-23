@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { getSpotifyTrackFromDetails, getSpotifyTrackFromImage } from './track.service'
-import Mime from '../types/mime'
+import Mime from '../types/Mime'
 import type ScannedTrack from '../types/ScannedTrack'
 import type SpotifyTrack from '../types/SpotifyTrack'
 import { getScannedTrackFromBase64 } from '../providers/gemini.provider'

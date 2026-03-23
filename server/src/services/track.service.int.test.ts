@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import { describe, expect, test } from "vitest";
 import { getSpotifyTrackFromDetails, getSpotifyTrackFromImage } from "./track.service";
-import Mime from "../types/mime";
+import Mime from "../types/Mime";
 
 /**
  * Gets base 64 encoding of local test image file

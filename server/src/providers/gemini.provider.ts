@@ -1,5 +1,5 @@
 import { ai, trackExtractionConfig, trackExtractionContent } from "../config/gemini.config.js";
-import Mime from "../types/mime.js";
+import Mime from "../types/Mime.js";
 import ScannedTrack, { scannedTrackSchema } from "../types/ScannedTrack.js";
 
 export async function getScannedTrackFromBase64(base64ImageEncoding: string, mimeType: Mime) : Promise<ScannedTrack> {
