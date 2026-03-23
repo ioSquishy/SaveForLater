@@ -6,12 +6,12 @@ vi.mock('../config/spotify.config', () => ({
 	default: {
 		search: vi.fn(),
 	},
-}))
+}));
 
 describe('getSpotifyTrack Mock Tests', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
-	})
+	});
 
 	const makeTrack = (
 		name: string,

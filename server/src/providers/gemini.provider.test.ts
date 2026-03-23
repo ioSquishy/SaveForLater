@@ -28,7 +28,7 @@ describe('getTrackFromBase64 Mock Tests', () => {
   });
 
   test('valid data', async () => {
-    const mockTrack : Track = { songTitle: 'Super', songArtists: [ 'SEVENTEEN' ] };
+    const mockTrack : Track = { songTitle: 'Super', songArtists: [ 'SEVENTEEN' ], certainty: 1 };
     
     // Setup the mock to return a successful response
     (ai.models.generateContent as any).mockResolvedValue({
