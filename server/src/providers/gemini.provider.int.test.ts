@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import { describe, expect, test } from 'vitest'
 import { getScannedTrackFromBase64 } from "./gemini.provider";
-import Mime from "../types/mime";
+import Mime from "../types/Mime";
 
 async function testLocalImage(pathToImg: string, mimeType: Mime) {
   const base64ImageFile = fs.readFileSync(pathToImg, {

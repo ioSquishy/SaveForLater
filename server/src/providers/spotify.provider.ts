@@ -1,5 +1,5 @@
 import spotifySdk from "../config/spotify.config";
-import SpotifyTrack from "../types/SpotifyTrack";
+import SpotifyTrack, {spotifyTrackSchema} from "../types/SpotifyTrack";
 
 export async function getSpotifyTrack(songTitle: string, songArtists?: string[]): Promise<SpotifyTrack> {
 	const trimmedTitle = songTitle.trim();
@@ -43,10 +43,10 @@ export async function getSpotifyTrack(songTitle: string, songArtists?: string[])
 
 	const albumImgUri = bestMatch.album.images[0]?.url;
 
-	return {
+	return spotifyTrackSchema.parse({
 		songTitle: bestMatch.name,
 		songArtists: bestMatch.artists.map((artist) => artist.name),
 		spotifyUri: bestMatch.uri,
 		...(albumImgUri ? { albumImgUri } : {}),
-	};
+	});
 }

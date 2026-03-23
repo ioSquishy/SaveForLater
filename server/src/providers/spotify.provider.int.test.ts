@@ -1,4 +1,3 @@
-import dotenv from 'dotenv'
 import { describe, expect, test } from 'vitest'
 import { getSpotifyTrack } from './spotify.provider'
 
