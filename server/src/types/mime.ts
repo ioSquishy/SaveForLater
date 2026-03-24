@@ -1,4 +1,4 @@
-const enum Mime {
+enum Mime {
   PNG = "image/png",
   JPEG = "image/jpeg",
   WEBP = "image/webp",
