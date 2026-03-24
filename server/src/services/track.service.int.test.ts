@@ -26,7 +26,7 @@ describe("getSpotifyTrackFromImage Real Tests", () => {
       songArtists: ["pami"],
       spotifyUri: "spotify:track:2sC6GuRvSFgHJerlWqrRYf",
     });
-  });
+  }, 30000);
 
   test("multiple artists", async () => {
     const result = await getSpotifyTrackFromImage(
@@ -40,7 +40,7 @@ describe("getSpotifyTrackFromImage Real Tests", () => {
       spotifyUri: "spotify:track:0U46xxypZWLnGD7vmzL7sb",
       albumImgUri: "https://i.scdn.co/image/ab67616d0000b2739ede10a5922585fb49594fb9",
     });
-  });
+  }, 30000);
 
   test("foreign language", async () => {
     const result = await getSpotifyTrackFromImage(
@@ -54,7 +54,7 @@ describe("getSpotifyTrackFromImage Real Tests", () => {
       spotifyUri: "spotify:track:3s4JDaCXYLtSdVU6GItAFy",
       albumImgUri: "https://i.scdn.co/image/ab67616d0000b2735887c18c5ebe6d84452d8483",
     });
-  });
+  }, 30000);
 
   test("full screenshot", async () => {
     const result = await getSpotifyTrackFromImage(
@@ -68,7 +68,7 @@ describe("getSpotifyTrackFromImage Real Tests", () => {
       spotifyUri: "spotify:track:1D42kRhIoq4FDn0GYFSCPl",
       albumImgUri: "https://i.scdn.co/image/ab67616d0000b273d81b96c9d0528f7b35d54e31",
     });
-  });
+  }, 30000);
 });
 
 describe("getSpotifyTrackFromDetails Real Tests", () => {
@@ -80,7 +80,7 @@ describe("getSpotifyTrackFromDetails Real Tests", () => {
       songArtists: ["pami"],
       spotifyUri: "spotify:track:2sC6GuRvSFgHJerlWqrRYf",
     });
-  });
+  }, 30000);
 
   test("multiple artists", async () => {
     const result = await getSpotifyTrackFromDetails("More Than Ever", [
@@ -94,7 +94,7 @@ describe("getSpotifyTrackFromDetails Real Tests", () => {
       spotifyUri: "spotify:track:0U46xxypZWLnGD7vmzL7sb",
       albumImgUri: "https://i.scdn.co/image/ab67616d0000b2739ede10a5922585fb49594fb9",
     });
-  });
+  }, 30000);
 
   test("foreign language", async () => {
     const result = await getSpotifyTrackFromDetails("東京劇場", ["Ettone"]);
@@ -105,7 +105,7 @@ describe("getSpotifyTrackFromDetails Real Tests", () => {
       spotifyUri: "spotify:track:3s4JDaCXYLtSdVU6GItAFy",
       albumImgUri: "https://i.scdn.co/image/ab67616d0000b2735887c18c5ebe6d84452d8483",
     });
-  });
+  }, 30000);
 
   test("full screenshot track details", async () => {
     const result = await getSpotifyTrackFromDetails("ONE LAST TIME", ["COOING"]);
@@ -116,5 +116,5 @@ describe("getSpotifyTrackFromDetails Real Tests", () => {
       spotifyUri: "spotify:track:1D42kRhIoq4FDn0GYFSCPl",
       albumImgUri: "https://i.scdn.co/image/ab67616d0000b273d81b96c9d0528f7b35d54e31",
     });
-  });
+  }, 30000);
 });

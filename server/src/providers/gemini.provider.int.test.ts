@@ -23,7 +23,7 @@ describe("getTrackFromBase64 Real Tests", () => {
       songArtists: [ 'Andrea Chahayed', 'Jackson Rau' ]
     });
     expect(result?.certainty).toBeGreaterThan(0.5);
-  });
+  }, 30000);
   
   test('full screenshot', async () => {
     let result = await testLocalImage("test/track_images/full.PNG", Mime.PNG);
@@ -32,7 +32,7 @@ describe("getTrackFromBase64 Real Tests", () => {
       songArtists: [ 'COOING' ]
     });
     expect(result?.certainty).toBeGreaterThan(0.5);
-  });
+  }, 30000);
   
   test('foreign language', async () => {
     let result = await testLocalImage("test/track_images/lang.jpg", Mime.JPEG);
@@ -41,7 +41,7 @@ describe("getTrackFromBase64 Real Tests", () => {
       songArtists: [ 'Ettone' ]
     });
     expect(result?.certainty).toBeGreaterThan(0.5);
-  });
+  }, 30000);
   
   test('simple', async () => {
     let result = await testLocalImage("test/track_images/simple.jpg", Mime.JPEG);
@@ -50,5 +50,5 @@ describe("getTrackFromBase64 Real Tests", () => {
       songArtists: [ 'pami' ]
     });
     expect(result?.certainty).toBeGreaterThan(0.5);
-  });
+  }, 30000);
 });

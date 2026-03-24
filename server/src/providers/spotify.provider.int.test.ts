@@ -24,7 +24,7 @@ describe('getSpotifyTrack Real Tests', () => {
 			expect.arrayContaining(['jay-z', 'linkin park'])
 		);
 		expect(result.spotifyUri).toMatch(/^spotify:track:/);
-	});
+	}, 30000);
 
 	test('gets correct song when title and one artist matches a two-artist track', async () => {
 		const result = await getSpotifyTrack('Numb/Encore', ['Linkin Park']);
@@ -32,7 +32,7 @@ describe('getSpotifyTrack Real Tests', () => {
 		expect(result.songTitle.toLowerCase()).toContain('numb');
 		expect(result.songArtists.map(normalizeForAssertion)).toContain('linkin park');
 		expect(result.spotifyUri).toMatch(/^spotify:track:/);
-	});
+	}, 30000);
 
 	test('throws when title does not exist', async () => {
 		const improbableTitle = `not-a-real-song-${Date.now()}-xyz`;
@@ -40,12 +40,12 @@ describe('getSpotifyTrack Real Tests', () => {
 		await expect(getSpotifyTrack(improbableTitle)).rejects.toThrow(
 			`No Spotify track found for \"${improbableTitle}\".`
 		);
-	});
+	}, 30000);
 
 	test('trims surrounding whitespace in title and artist input', async () => {
 		const result = await getSpotifyTrack('  Bohemian Rhapsody  ', ['  Queen  ']);
 
 		expect(result.songTitle.toLowerCase()).toContain('bohemian rhapsody');
 		expect(result.songArtists.map((artist) => artist.toLowerCase())).toContain('queen');
-	});
+	}, 30000);
 });
