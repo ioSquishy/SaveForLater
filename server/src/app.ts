@@ -4,7 +4,8 @@ export const app = express();
 import searchRouter from './routes/search.routes';
 
 // automatically convert requests to json
-app.use(express.json());
+// set json body size limit to 18mb (default is 10mb) b/c max gemini inline data request size is 20mb
+app.use(express.json({ limit: '18mb' }));
 // can specify what services can use this server by doing for example: cors(http://localhost:5174/)
 app.use(cors());
 
