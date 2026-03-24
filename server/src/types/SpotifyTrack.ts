@@ -7,6 +7,6 @@ export const spotifyTrackSchema = z.object({
   albumImgUri: z.string().optional(),
 });
 
-export type SpotifyTrack = z.infer<typeof spotifyTrackSchema>;
+type SpotifyTrack = z.infer<typeof spotifyTrackSchema>;
 
 export default SpotifyTrack;

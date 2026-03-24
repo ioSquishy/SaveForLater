@@ -6,6 +6,6 @@ export const scannedTrackSchema = z.object({
   certainty: z.number().min(0).max(1),
 });
 
-export type ScannedTrack = z.infer<typeof scannedTrackSchema>;
+type ScannedTrack = z.infer<typeof scannedTrackSchema>;
 
 export default ScannedTrack;
