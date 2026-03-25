@@ -4,14 +4,14 @@ import Mime from '../types/Mime'
 import type ScannedTrack from '../types/ScannedTrack'
 import type SpotifyTrack from '../types/SpotifyTrack'
 import { getScannedTrackFromBase64 } from '../providers/gemini.provider'
-import { getSpotifyTrack } from '../providers/spotify.provider'
+import { getSpotifyTracks } from '../providers/spotify.provider'
 
 vi.mock('../providers/gemini.provider', () => ({
 	getScannedTrackFromBase64: vi.fn(),
 }));
 
 vi.mock('../providers/spotify.provider', () => ({
-	getSpotifyTrack: vi.fn(),
+	getSpotifyTracks: vi.fn(),
 }));
 
 describe('track.service', () => {
@@ -19,7 +19,7 @@ describe('track.service', () => {
 		vi.clearAllMocks()
 	});
 
-	test('getSpotifyTrackFromImage returns Spotify track when extraction certainty is high', async () => {
+	test('getSpotifyTrackFromImage returns first Spotify track when extraction certainty is high', async () => {
 		const scannedTrack: ScannedTrack = {
 			songTitle: 'Numb/Encore',
 			songArtists: ['Jay-Z', 'Linkin Park'],
@@ -34,11 +34,37 @@ describe('track.service', () => {
 		};
 
 		(getScannedTrackFromBase64 as any).mockResolvedValue(scannedTrack);
-		(getSpotifyTrack as any).mockResolvedValue(spotifyTrack);
+		(getSpotifyTracks as any).mockResolvedValue([spotifyTrack]);
 
 		const result = await getSpotifyTrackFromImage('base64-data', Mime.JPEG);
 
 		expect(result).toEqual(spotifyTrack);
+		expect(getSpotifyTracks).toHaveBeenCalledWith('Numb/Encore', ['Jay-Z', 'Linkin Park'], 1);
+	});
+
+	test('getSpotifyTrackFromImage selects the top-ranked track from provider results', async () => {
+		(getScannedTrackFromBase64 as any).mockResolvedValue({
+			songTitle: 'Super',
+			songArtists: ['SEVENTEEN'],
+			certainty: 0.9,
+		} as ScannedTrack);
+
+		(getSpotifyTracks as any).mockResolvedValue([
+			{
+				songTitle: 'Super',
+				songArtists: ['SEVENTEEN'],
+				spotifyUri: 'spotify:track:top',
+			},
+			{
+				songTitle: 'Super',
+				songArtists: ['Wrong Artist'],
+				spotifyUri: 'spotify:track:second',
+			},
+		]);
+
+		const result = await getSpotifyTrackFromImage('base64-data', Mime.JPEG);
+
+		expect(result.spotifyUri).toBe('spotify:track:top');
 	});
 
 	test('getSpotifyTrackFromImage throws when extraction certainty is too low', async () => {
@@ -51,14 +77,14 @@ describe('track.service', () => {
 		await expect(getSpotifyTrackFromImage('base64-data', Mime.PNG)).rejects.toThrow(
 			'Track extraction certainty is too low.'
 		);
-		expect(getSpotifyTrack).not.toHaveBeenCalled();
+		expect(getSpotifyTracks).not.toHaveBeenCalled();
 	});
 
 	test('getSpotifyTrackFromImage rethrows Gemini provider errors', async () => {
 		(getScannedTrackFromBase64 as any).mockRejectedValue(new Error('Gemini unavailable'));
 
 		await expect(getSpotifyTrackFromImage('base64-data', Mime.WEBP)).rejects.toThrow('Gemini unavailable');
-		expect(getSpotifyTrack).not.toHaveBeenCalled();
+		expect(getSpotifyTracks).not.toHaveBeenCalled();
 	});
 
 	test('getSpotifyTrackFromImage rethrows Spotify provider errors', async () => {
@@ -67,23 +93,36 @@ describe('track.service', () => {
 			songArtists: ['Jay-Z', 'Linkin Park'],
 			certainty: 0.8,
 		} as ScannedTrack);
-		(getSpotifyTrack as any).mockRejectedValue(new Error('Spotify unavailable'));
+		(getSpotifyTracks as any).mockRejectedValue(new Error('Spotify unavailable'));
 
 		await expect(getSpotifyTrackFromImage('base64-data', Mime.JPEG)).rejects.toThrow('Spotify unavailable')
 	});
 
-	test('getSpotifyTrackFromDetails delegates to Spotify provider and returns result', async () => {
+	test('getSpotifyTrackFromDetails delegates to Spotify provider and returns results', async () => {
 		const spotifyTrack: SpotifyTrack = {
 			songTitle: 'Super',
 			songArtists: ['SEVENTEEN'],
 			spotifyUri: 'spotify:track:super',
 		};
+		const spotifyTracks = [spotifyTrack];
 
-		(getSpotifyTrack as any).mockResolvedValue(spotifyTrack);
+		(getSpotifyTracks as any).mockResolvedValue(spotifyTracks);
 
 		const result = await getSpotifyTrackFromDetails('Super', ['SEVENTEEN']);
 
-		expect(getSpotifyTrack).toHaveBeenCalledWith('Super', ['SEVENTEEN']);
-		expect(result).toEqual(spotifyTrack);
+		expect(getSpotifyTracks).toHaveBeenCalledWith('Super', ['SEVENTEEN'], undefined);
+		expect(result).toEqual(spotifyTracks);
+	});
+
+	test('getSpotifyTrackFromDetails forwards limit to provider', async () => {
+		(getSpotifyTracks as any).mockResolvedValue([
+			{ songTitle: 'Song A', songArtists: ['Artist A'], spotifyUri: 'spotify:track:1' },
+			{ songTitle: 'Song B', songArtists: ['Artist B'], spotifyUri: 'spotify:track:2' },
+		]);
+
+		const result = await getSpotifyTrackFromDetails('Song', ['Artist'], 2);
+
+		expect(getSpotifyTracks).toHaveBeenCalledWith('Song', ['Artist'], 2);
+		expect(result).toHaveLength(2);
 	});
 });

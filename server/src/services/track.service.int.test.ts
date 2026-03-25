@@ -73,8 +73,10 @@ describe("getSpotifyTrackFromImage Real Tests", () => {
 
 describe("getSpotifyTrackFromDetails Real Tests", () => {
   test("simple", async () => {
-    const result = await getSpotifyTrackFromDetails("kiss me blue", ["pami"]);
+    const results = await getSpotifyTrackFromDetails("kiss me blue", ["pami"]);
+    const result = results[0];
 
+    expect(results.length).toBeGreaterThan(0);
     expect(result).toMatchObject({
       songTitle: "kiss me blue",
       songArtists: ["pami"],
@@ -83,11 +85,13 @@ describe("getSpotifyTrackFromDetails Real Tests", () => {
   }, 30000);
 
   test("multiple artists", async () => {
-    const result = await getSpotifyTrackFromDetails("More Than Ever", [
+    const results = await getSpotifyTrackFromDetails("More Than Ever", [
       "Andrea Chahayed",
       "Jackson Rau",
     ]);
+    const result = results[0];
 
+    expect(results.length).toBeGreaterThan(0);
     expect(result).toMatchObject({
       songTitle: "More Than Ever",
       songArtists: ["Andrea Chahayed", "Jackson Rau", "Swoon", "Gelo"],
@@ -97,8 +101,10 @@ describe("getSpotifyTrackFromDetails Real Tests", () => {
   }, 30000);
 
   test("foreign language", async () => {
-    const result = await getSpotifyTrackFromDetails("東京劇場", ["Ettone"]);
+    const results = await getSpotifyTrackFromDetails("東京劇場", ["Ettone"]);
+    const result = results[0];
 
+    expect(results.length).toBeGreaterThan(0);
     expect(result).toMatchObject({
       songTitle: "東京劇場",
       songArtists: ["Ettone"],
@@ -108,13 +114,22 @@ describe("getSpotifyTrackFromDetails Real Tests", () => {
   }, 30000);
 
   test("full screenshot track details", async () => {
-    const result = await getSpotifyTrackFromDetails("ONE LAST TIME", ["COOING"]);
+    const results = await getSpotifyTrackFromDetails("ONE LAST TIME", ["COOING"]);
+    const result = results[0];
 
+    expect(results.length).toBeGreaterThan(0);
     expect(result).toMatchObject({
       songTitle: "ONE LAST TIME",
       songArtists: ["COOING"],
       spotifyUri: "spotify:track:1D42kRhIoq4FDn0GYFSCPl",
       albumImgUri: "https://i.scdn.co/image/ab67616d0000b273d81b96c9d0528f7b35d54e31",
     });
+  }, 30000);
+
+  test("respects limit for details lookup", async () => {
+    const results = await getSpotifyTrackFromDetails("Numb/Encore", ["Jay-Z", "Linkin Park"], 1);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].spotifyUri).toMatch(/^spotify:track:/);
   }, 30000);
 });

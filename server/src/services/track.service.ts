@@ -1,22 +1,18 @@
+import { MaxInt } from "@spotify/web-api-ts-sdk";
 import { getScannedTrackFromBase64 } from "../providers/gemini.provider";
-import { getSpotifyTrack } from "../providers/spotify.provider";
+import { getSpotifyTracks } from "../providers/spotify.provider";
 import Mime from "../types/Mime";
 import SpotifyTrack from "../types/SpotifyTrack";
 
 export async function getSpotifyTrackFromImage(base64ImageEncoding: string, mimeType: Mime): Promise<SpotifyTrack> {
-  try {
-    let scannedTrack = await getScannedTrackFromBase64(base64ImageEncoding, mimeType);
-    if (scannedTrack.certainty < 0.5) {
-      throw new Error("Track extraction certainty is too low.");
-    }
-
-    return await getSpotifyTrack(scannedTrack.songTitle, scannedTrack.songArtists);
-  } catch (error) {
-    throw error || "Failed to get Spotify track from Image.";
+  let scannedTrack = await getScannedTrackFromBase64(base64ImageEncoding, mimeType);
+  if (scannedTrack.certainty < 0.5) {
+    throw new Error("Track extraction certainty is too low.");
   }
+  return (await getSpotifyTracks(scannedTrack.songTitle, scannedTrack.songArtists, 1))[0];
 }
 
 
-export async function getSpotifyTrackFromDetails(songTitle: string, songArtists?: string[]): Promise<SpotifyTrack> {
-  return await getSpotifyTrack(songTitle, songArtists);
+export async function getSpotifyTrackFromDetails(songTitle: string, songArtists?: string[], limit?: number): Promise<SpotifyTrack[]> {
+  return await getSpotifyTracks(songTitle, songArtists, limit);
 }

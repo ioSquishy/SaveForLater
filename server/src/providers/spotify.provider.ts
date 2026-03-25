@@ -1,7 +1,19 @@
+import { MaxInt } from "@spotify/web-api-ts-sdk";
 import spotifySdk from "../config/spotify.config";
 import SpotifyTrack, {spotifyTrackSchema} from "../types/SpotifyTrack";
 
-export async function getSpotifyTrack(songTitle: string, songArtists?: string[]): Promise<SpotifyTrack> {
+function numberToLimit(limit?: number): MaxInt<50> {
+	if (limit === undefined) return 5; // default search window
+
+	if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+			throw new Error("limit must be an integer between [1-50]");
+	}
+
+	// enforce minimum 5 for better matching
+	return (limit < 5 ? 5 : limit) as MaxInt<50>;
+}
+
+export async function getSpotifyTracks(songTitle: string, songArtists?: string[], limit?: number): Promise<SpotifyTrack[]> {
 	const trimmedTitle = songTitle.trim();
 	if (!trimmedTitle) {
 		throw new Error("Song title cannot be empty.");
@@ -13,14 +25,16 @@ export async function getSpotifyTrack(songTitle: string, songArtists?: string[])
 	const artistQuery = requestedArtists.map((artist) => `artist:${artist}`).join(" ");
 	const query = artistQuery ? `track:${trimmedTitle} ${artistQuery}` : `track:${trimmedTitle}`;
 
-	const response = await spotifySdk.search(query, ["track"], undefined, 10);
+	// minimum limit of 5 to get surrounding results in case there is a better match lower down the list
+	const searchLimit = numberToLimit(limit);
+	const response = await spotifySdk.search(query, ["track"], undefined, searchLimit);
 	const candidates = response.tracks.items;
 
 	if (!candidates.length) {
 		throw new Error(`No Spotify track found for \"${trimmedTitle}\".`);
 	}
 
-	const bestMatch = requestedArtists.length
+	const scoredCandidates = requestedArtists.length
 		? candidates
 				.map((track) => {
 					const normalizedTrackArtists = track.artists.map((artist) => normalize(artist.name));
@@ -36,17 +50,18 @@ export async function getSpotifyTrack(songTitle: string, songArtists?: string[])
 
 					return { track, artistMatchScore };
 				})
-				.reduce((best, current) =>
-					current.artistMatchScore > best.artistMatchScore ? current : best
-				).track
-		: candidates[0];
+				.sort((a, b) => b.artistMatchScore - a.artistMatchScore)
+		: candidates.map((track) => ({ track, artistMatchScore: 0 }));
 
-	const albumImgUri = bestMatch.album.images[0]?.url;
+	const maxResults = limit ?? candidates.length;
+	return scoredCandidates.slice(0, maxResults).map(({ track }) => {
+		const albumImgUri = track.album.images[0]?.url;
 
-	return spotifyTrackSchema.parse({
-		songTitle: bestMatch.name,
-		songArtists: bestMatch.artists.map((artist) => artist.name),
-		spotifyUri: bestMatch.uri,
-		...(albumImgUri ? { albumImgUri } : {}),
+		return spotifyTrackSchema.parse({
+			songTitle: track.name,
+			songArtists: track.artists.map((artist) => artist.name),
+			spotifyUri: track.uri,
+			...(albumImgUri ? { albumImgUri } : {}),
+		});
 	});
 }

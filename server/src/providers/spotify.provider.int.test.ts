@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { getSpotifyTrack } from './spotify.provider'
+import { getSpotifyTracks } from './spotify.provider'
 
 /**
  * Normalizes accented characters and sets to lowercase
@@ -14,38 +14,50 @@ function normalizeForAssertion(value: string): string {
 		.replace(/[\u0300-\u036f]/g, '');
 }
 
-describe('getSpotifyTrack Real Tests', () => {
+describe('getSpotifyTracks Real Tests', () => {
 	test('gets correct song when title and all artists match', async () => {
-		const result = await getSpotifyTrack('Numb/Encore', ['Jay-Z', 'Linkin Park']);
-		const normalizedArtists = result.songArtists.map(normalizeForAssertion);
+		const results = await getSpotifyTracks('Numb/Encore', ['Jay-Z', 'Linkin Park']);
+		const bestResult = results[0];
+		const normalizedArtists = bestResult.songArtists.map(normalizeForAssertion);
 
-		expect(result.songTitle.toLowerCase()).toContain('numb');
+		expect(results.length).toBeGreaterThan(0);
+		expect(bestResult.songTitle.toLowerCase()).toContain('numb');
 		expect(normalizedArtists).toEqual(
 			expect.arrayContaining(['jay-z', 'linkin park'])
 		);
-		expect(result.spotifyUri).toMatch(/^spotify:track:/);
+		expect(bestResult.spotifyUri).toMatch(/^spotify:track:/);
 	}, 30000);
 
 	test('gets correct song when title and one artist matches a two-artist track', async () => {
-		const result = await getSpotifyTrack('Numb/Encore', ['Linkin Park']);
+		const results = await getSpotifyTracks('Numb/Encore', ['Linkin Park']);
+		const bestResult = results[0];
 
-		expect(result.songTitle.toLowerCase()).toContain('numb');
-		expect(result.songArtists.map(normalizeForAssertion)).toContain('linkin park');
-		expect(result.spotifyUri).toMatch(/^spotify:track:/);
+		expect(results.length).toBeGreaterThan(0);
+		expect(bestResult.songTitle.toLowerCase()).toContain('numb');
+		expect(bestResult.songArtists.map(normalizeForAssertion)).toContain('linkin park');
+		expect(bestResult.spotifyUri).toMatch(/^spotify:track:/);
+	}, 30000);
+
+	test('respects result size limit', async () => {
+		const results = await getSpotifyTracks('Numb/Encore', ['Jay-Z', 'Linkin Park'], 1);
+
+		expect(results).toHaveLength(1);
+		expect(results[0].spotifyUri).toMatch(/^spotify:track:/);
 	}, 30000);
 
 	test('throws when title does not exist', async () => {
 		const improbableTitle = `not-a-real-song-${Date.now()}-xyz`;
 
-		await expect(getSpotifyTrack(improbableTitle)).rejects.toThrow(
+		await expect(getSpotifyTracks(improbableTitle)).rejects.toThrow(
 			`No Spotify track found for \"${improbableTitle}\".`
 		);
 	}, 30000);
 
 	test('trims surrounding whitespace in title and artist input', async () => {
-		const result = await getSpotifyTrack('  Bohemian Rhapsody  ', ['  Queen  ']);
+		const results = await getSpotifyTracks('  Bohemian Rhapsody  ', ['  Queen  ']);
+		const bestResult = results[0];
 
-		expect(result.songTitle.toLowerCase()).toContain('bohemian rhapsody');
-		expect(result.songArtists.map((artist) => artist.toLowerCase())).toContain('queen');
+		expect(bestResult.songTitle.toLowerCase()).toContain('bohemian rhapsody');
+		expect(bestResult.songArtists.map((artist) => artist.toLowerCase())).toContain('queen');
 	}, 30000);
 });
