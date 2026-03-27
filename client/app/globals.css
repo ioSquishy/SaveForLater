@@ -140,6 +140,19 @@ small,
   color: var(--foreground-muted);
 }
 
+.meta-span {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.625rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #cac3d8;
+  opacity: 0.6;
+  text-shadow: 0 4px 4px rgb(0 0 0 / 25%);
+}
+
 a {
   color: var(--primary);
 }

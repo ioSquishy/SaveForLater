@@ -1,6 +1,35 @@
+"use client"
+
+import { useState, useRef } from "react"
+
 export default function Home() {
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const supportedTypes = ["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.currentTarget.files
+    if (!files) return
+
+    const newFiles: File[] = []
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (supportedTypes.includes(file.type)) {
+        newFiles.push(file)
+      }
+    }
+
+    setSelectedPhotos([...selectedPhotos, ...newFiles])
+
+    event.currentTarget.value = ""
+  }
   return (
-    <main className="relative min-h-screen overflow-hidden px-6 py-10 sm:py-14">
+    <main className="relative min-h-screen overflow-hidden px-6 sm:py-14">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-[-3rem] top-[-6rem] h-[34rem] w-[18rem] blur-[40px]"
@@ -34,6 +63,7 @@ export default function Home() {
 
           <button
             type="button"
+            onClick={handleUploadClick}
             className="stagger-in mt-12 w-full"
             style={{ animationDelay: "80ms" }}
           >
@@ -103,6 +133,20 @@ export default function Home() {
               />
             </div>
           </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".png,.jpeg,.jpg,.webp,.heic,.heif"
+            onChange={handleFileSelect}
+            style={{ display: "none" }}
+            aria-label="Upload photos"
+          />
+
+          <span className="meta-span mt-3" data-node-id="24:24">
+            {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? "s" : ""} selected
+          </span>
 
           <div className="stagger-in mt-11 w-full" style={{ animationDelay: "140ms" }}>
             <button type="button" className="primary-button">
