@@ -32,6 +32,13 @@ export default function StartScreen({ onUpload }: StartScreenProps) {
 
     event.currentTarget.value = ""
   }
+
+  const handleGetStarted = () => {
+    if (selectedPhotos.length > 0) {
+      onUpload(selectedPhotos);
+    }
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden px-6 sm:py-14">
       <div
@@ -153,7 +160,7 @@ export default function StartScreen({ onUpload }: StartScreenProps) {
           </span>
 
           <div className="stagger-in mt-11 w-full" style={{ animationDelay: "140ms" }}>
-            <button type="button" className="primary-button">
+            <button type="button" className="primary-button" onClick={handleGetStarted}>
               <span>Get Started</span>
               <svg
                 width="16"
