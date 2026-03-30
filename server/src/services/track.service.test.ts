@@ -80,14 +80,18 @@ describe('track.service', () => {
 		expect(getSpotifyTracks).not.toHaveBeenCalled();
 	});
 
-	test('getSpotifyTrackFromImage rethrows Gemini provider errors', async () => {
+	test('getSpotifyTrackFromImage maps Gemini provider errors to 503', async () => {
 		(getScannedTrackFromBase64 as any).mockRejectedValue(new Error('Gemini unavailable'));
 
-		await expect(getSpotifyTrackFromImage('base64-data', Mime.WEBP)).rejects.toThrow('Gemini unavailable');
+		await expect(getSpotifyTrackFromImage('base64-data', Mime.WEBP)).rejects.toMatchObject({
+			statusCode: 503,
+			message: 'Gemini service is unavailable.',
+			code: 'GEMINI_UNAVAILABLE',
+		});
 		expect(getSpotifyTracks).not.toHaveBeenCalled();
 	});
 
-	test('getSpotifyTrackFromImage rethrows Spotify provider errors', async () => {
+	test('getSpotifyTrackFromImage maps Spotify provider errors to 503', async () => {
 		(getScannedTrackFromBase64 as any).mockResolvedValue({
 			songTitle: 'Numb/Encore',
 			songArtists: ['Jay-Z', 'Linkin Park'],
@@ -95,7 +99,26 @@ describe('track.service', () => {
 		} as ScannedTrack);
 		(getSpotifyTracks as any).mockRejectedValue(new Error('Spotify unavailable'));
 
-		await expect(getSpotifyTrackFromImage('base64-data', Mime.JPEG)).rejects.toThrow('Spotify unavailable')
+		await expect(getSpotifyTrackFromImage('base64-data', Mime.JPEG)).rejects.toMatchObject({
+			statusCode: 503,
+			message: 'Spotify service is unavailable.',
+			code: 'SPOTIFY_UNAVAILABLE',
+		});
+	});
+
+	test('getSpotifyTrackFromImage maps provider not-found errors to 404', async () => {
+		(getScannedTrackFromBase64 as any).mockResolvedValue({
+			songTitle: 'Not Real',
+			songArtists: ['Nobody'],
+			certainty: 0.9,
+		} as ScannedTrack);
+		(getSpotifyTracks as any).mockRejectedValue(new Error('No Spotify track found for "Not Real".'));
+
+		await expect(getSpotifyTrackFromImage('base64-data', Mime.JPEG)).rejects.toMatchObject({
+			statusCode: 404,
+			message: 'No matching Spotify track found.',
+			code: 'TRACK_NOT_FOUND',
+		});
 	});
 
 	test('getSpotifyTrackFromDetails delegates to Spotify provider and returns results', async () => {
@@ -124,5 +147,25 @@ describe('track.service', () => {
 
 		expect(getSpotifyTracks).toHaveBeenCalledWith('Song', ['Artist'], 2);
 		expect(result).toHaveLength(2);
+	});
+
+	test('getSpotifyTrackFromDetails maps Spotify provider errors to 503', async () => {
+		(getSpotifyTracks as any).mockRejectedValue(new Error('Spotify unavailable'));
+
+		await expect(getSpotifyTrackFromDetails('Song', ['Artist'], 2)).rejects.toMatchObject({
+			statusCode: 503,
+			message: 'Spotify service is unavailable.',
+			code: 'SPOTIFY_UNAVAILABLE',
+		});
+	});
+
+	test('getSpotifyTrackFromDetails maps provider not-found errors to 404', async () => {
+		(getSpotifyTracks as any).mockRejectedValue(new Error('No Spotify track found for "Song".'));
+
+		await expect(getSpotifyTrackFromDetails('Song', ['Artist'], 2)).rejects.toMatchObject({
+			statusCode: 404,
+			message: 'No matching Spotify track found.',
+			code: 'TRACK_NOT_FOUND',
+		});
 	});
 });

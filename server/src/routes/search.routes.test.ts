@@ -63,8 +63,9 @@ describe('POST /search/image', () => {
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({
-      status: 'Failed to get track',
-      message: 'service unavailable',
+      error: 'service unavailable',
+      code: 'INTERNAL_ERROR',
+      details: undefined,
     });
   });
 });
@@ -159,8 +160,9 @@ describe('GET /search/details', () => {
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({
-      status: 'Failed to get track',
-      message: 'spotify unavailable',
+      error: 'spotify unavailable',
+      code: 'INTERNAL_ERROR',
+      details: undefined,
     });
     expect(getSpotifyTrackFromDetails).toHaveBeenCalledWith('More Than Ever', ['Andrea Chahayed', 'Jackson Rau'], 10);
   });
