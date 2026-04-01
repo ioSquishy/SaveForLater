@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import TrackRequest from "../Types/TrackRequest";
 import RestartHeader from "./RestartHeader"
-import SpotifyTrack from "../Types/SpotifyTrack";
+import SpotifyTrack, { spotifyTrackSchema } from "../Types/SpotifyTrack";
+import ErrorAlert from "./ErrorAlert";
 
 interface ProcessingScreenProps {
   trackRequests: TrackRequest[];
   onRestart: () => void;
-  onTrackUpdated: (index: number, patch: TrackRequest) => void;
+  onTrackUpdated: (index: number, patch: Partial<TrackRequest>) => void;
   onRefinementNeeded: (refineIndex: number) => void;
   onProcessingComplete: () => void;
 }
@@ -66,8 +67,23 @@ export default function ProcessingScreen({
   onProcessingComplete
 }: ProcessingScreenProps) {
   const [currentFileName, setCurrentFileName] = useState<string>(trackRequests[0]?.file.name ?? "your photos");
+  const [processingError, setProcessingError] = useState<string | null>(null);
+  const activeRequestKeyRef = useRef<string | null>(null);
   const matchedCount = trackRequests.filter((t) => t.state === "success").length;
   const remainingCount = trackRequests.filter((t) => t.state === "pending").length;
+
+  async function toBase64(file: File): Promise<string> {
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 0x8000;
+    let binary = "";
+
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+
+    return btoa(binary);
+  }
 
   function getDisplayTrackRequests() : SongRowProps[] {
     let displayPlaylist : SongRowProps[] = trackRequests.filter(t => t.state === "success" && t.track)
@@ -90,27 +106,97 @@ export default function ProcessingScreen({
     return displayPlaylist;
   }
 
+  function stopProcessing(reason: string) {
+    console.warn(`Stopped processing because: ${reason}`);
+    setProcessingError(reason);
+  }
+
   useEffect(() => {
-    let nextPendingTrack = trackRequests.find((trackRequest) => trackRequest.state === "pending");
-    if (nextPendingTrack) {
-      setCurrentFileName(nextPendingTrack.file.name);
-      const trackIndex = trackRequests.indexOf(nextPendingTrack);
-      // TODO: process request
-      nextPendingTrack.track = {
-        songTitle: "hi",
-        songArtists: ["a"],
-        spotifyUri: "1"
-      }
-      nextPendingTrack.state = "success";
-      // handle failure
-      onTrackUpdated(trackIndex, nextPendingTrack);
+    if (processingError) {
       return;
     }
-    // onProcessingComplete();
-  }, [trackRequests]);
+
+    const nextPendingTrack = trackRequests.find((trackRequest) => trackRequest.state === "pending");
+    if (nextPendingTrack) {
+      setCurrentFileName(nextPendingTrack.file.name);
+      const trackIndex = trackRequests.findIndex((trackRequest) => trackRequest === nextPendingTrack);
+      const trackKey = `${nextPendingTrack.file.name}-${nextPendingTrack.file.lastModified}-${nextPendingTrack.file.size}`;
+
+      if (activeRequestKeyRef.current === trackKey) {
+        return;
+      }
+
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+      if (!serverUrl) {
+        stopProcessing("NEXT_PUBLIC_SERVER_URL env variable not found");
+        return;
+      }
+
+      activeRequestKeyRef.current = trackKey;
+
+      (async () => {
+        try {
+          const base64Image = await toBase64(nextPendingTrack.file);
+          const endpoint = `${serverUrl.replace(/\/$/, "")}/search/image`;
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              base64Image,
+              mimeType: nextPendingTrack.file.type,
+            }),
+          });
+
+          if (response.ok) {
+            const body = await response.json();
+            const parsedTrack = spotifyTrackSchema.safeParse(body);
+
+            if (!parsedTrack.success) {
+              onTrackUpdated(trackIndex, { state: "failed" });
+              stopProcessing("Server returned an invalid track payload");
+              return;
+            }
+
+            onTrackUpdated(trackIndex, {
+              state: "success",
+              track: parsedTrack.data,
+            });
+            return;
+          }
+
+          onTrackUpdated(trackIndex, { state: "failed" });
+
+          if (response.status >= 400 && response.status < 500) {
+            onRefinementNeeded(trackIndex);
+            return;
+          }
+
+          stopProcessing("Server is unavailable right now. Please try again in a moment.");
+        } catch (error) {
+          onTrackUpdated(trackIndex, { state: "failed" });
+          stopProcessing(error instanceof Error ? error.message : "Unexpected processing error");
+        } finally {
+          activeRequestKeyRef.current = null;
+        }
+      })();
+
+      return;
+    }
+    onProcessingComplete();
+  }, [trackRequests, processingError]);
 
   return (
     <main className="relative min-h-screen overflow-hidden px-6 pt-5">
+      {processingError && (
+        <ErrorAlert
+          message={processingError}
+          onRetry={() => setProcessingError(null)}
+          onRestart={onRestart}
+        />
+      )}
+
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-[-6rem] top-[-6rem] size-96 rounded-full bg-[rgb(125_90_220_/_10%)] blur-[60px]"
