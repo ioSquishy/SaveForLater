@@ -51,4 +51,15 @@ describe("getTrackFromBase64 Real Tests", () => {
     });
     expect(result?.certainty).toBeGreaterThan(0.5);
   }, 30000);
+
+  test('no songs in screenshot', async () => {
+    let result = await testLocalImage("test/track_images/empty.png", Mime.PNG);
+    expect(result).toMatchObject({
+      songTitle: '',
+      songArtists: [],
+      certainty: 0
+    });
+  }, 30000);
+
+	// TODO: make test with multiple songs detected
 });
