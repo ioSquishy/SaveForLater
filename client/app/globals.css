@@ -372,3 +372,21 @@ hr {
     border-radius: 2rem;
   }
 }
+
+/* Custom scrollbar for webkit */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(202 195 216 / 20%);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgb(202 195 216 / 40%);
+}
