@@ -1,4 +1,4 @@
-import { ai, trackExtractionConfig, trackExtractionContent } from "../config/gemini.config.js";
+import { ai, trackExtractionConfig, trackExtractionContent, geminiModel } from "../config/gemini.config.js";
 import Mime from "../types/Mime.js";
 import ScannedTrack, { scannedTrackSchema } from "../types/ScannedTrack.js";
 
@@ -16,7 +16,7 @@ export async function getScannedTrackFromBase64(base64ImageEncoding: string, mim
   ];
   
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: geminiModel,
     contents: contents,
     config: trackExtractionConfig,
   });
