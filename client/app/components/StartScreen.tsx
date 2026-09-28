@@ -162,22 +162,13 @@ export default function StartScreen({ onUpload }: StartScreenProps) {
           <div className="stagger-in mt-11 w-full" style={{ animationDelay: "140ms" }}>
             <button type="button" className="primary-button" onClick={handleGetStarted}>
               <span>Get Started</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+              <img
+                width="14"
+                height="14"
+                src="/right-arrow.svg"
+                alt=""
                 aria-hidden="true"
-              >
-                <path
-                  d="M3.3335 8H12.6668M12.6668 8L8.66683 4M12.6668 8L8.66683 12"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              />
             </button>
           </div>
         </div>

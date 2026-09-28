@@ -248,11 +248,13 @@ hr {
 }
 
 .primary-button > span,
-.primary-button > svg {
+.primary-button > svg,
+.primary-button > img {
   flex-shrink: 0;
 }
 
-.primary-button > svg {
+.primary-button > svg,
+.primary-button > img {
   margin-top: 1px;
 }
 
