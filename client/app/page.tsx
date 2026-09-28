@@ -3,9 +3,9 @@ import { useState } from 'react';
 import StartScreen from './components/StartScreen';
 import ProcessingScreen from './components/ProcessingScreen';
 import RefineScreen from './components/RefineScreen';
+import ConnectScreen from './components/ConnectScreen';
 import TrackRequest from './Types/TrackRequest';
 import SpotifyTrack from './Types/SpotifyTrack';
-// import ConnectScreen from './components/ConnectScreen';
 
 export default function ExtractionFlow() {
   // Track the current step in the UI
@@ -91,9 +91,10 @@ export default function ExtractionFlow() {
       )}
 
       {currentStep === 'CONNECT' && (
-        <>
-          <h1>connect</h1>
-        </>
+        <ConnectScreen 
+          onRestart={handleRestart}
+          trackRequests={trackRequests}
+        />
       )}
     </>
   );
